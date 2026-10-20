@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Exactamente el crema del logo. Si no coincide al pixel, el
+         borde del primer plano se ve cuando el lanzador anima el icono. -->
+    <color name="ic_launcher_background">#F9EEDC</color>
+</resources>

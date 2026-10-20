@@ -1,0 +1,29 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      // El de siempre: lee el catálogo real de Supabase.
+      "name": "Lira (Supabase)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "toolArgs": ["--dart-define-from-file=env.json"]
+    },
+    {
+      // Sin credenciales, para probar el modo de respaldo. La biblioteca
+      // muestra la etiqueta dorada de "catálogo de muestra".
+      "name": "Lira (catálogo local)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart"
+    },
+    {
+      "name": "Lira (Supabase · release)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "flutterMode": "release",
+      "toolArgs": ["--dart-define-from-file=env.json"]
+    }
+  ]
+}
