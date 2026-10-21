@@ -1,46 +1,57 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
   <base href="$FLUTTER_BASE_HREF">
-
   <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
-
-  <!-- iOS meta tags & icons -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Lira: tu biblioteca digital para leer, crear y descubrir historias a tu ritmo.">
+  <meta name="theme-color" content="#6B2639">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="lira">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Lira">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
-
-  <title>lira</title>
+  <link rel="icon" type="image/png" href="favicon.png">
   <link rel="manifest" href="manifest.json">
+  <title>Lira — Biblioteca digital</title>
+  <style>
+    :root { color-scheme: light; background: #F8EEDB; color: #6B2639; }
+    body { margin: 0; }
+    #loading {
+      position: fixed; inset: 0; display: grid; place-content: center;
+      padding: 24px; text-align: center; font: 16px/1.6 system-ui, sans-serif;
+    }
+    #loading h1 { margin: 0; font: 600 48px Georgia, serif; }
+    #loading p { max-width: 32rem; }
+    #loading button {
+      border: 0; border-radius: 32px; padding: 14px 24px;
+      background: #6B2639; color: #F8EEDB; cursor: pointer; font: inherit;
+    }
+    #loading button:focus-visible {
+      outline: 3px solid #6B2639; outline-offset: 4px;
+    }
+    [hidden] { display: none !important; }
+  </style>
 </head>
 <body>
-  <!--
-    You can customize the "flutter_bootstrap.js" script.
-    This is useful to provide a custom configuration to the Flutter loader
-    or to give the user feedback during the initialization process.
-
-    For more details:
-    * https://docs.flutter.dev/platform-integration/web/initialization
-  -->
-  <script src="flutter_bootstrap.js" async></script>
+  <div id="loading" role="status" aria-live="polite">
+    <h1>Lira</h1>
+    <p id="loading-message">Preparando tu biblioteca…</p>
+    <button id="retry" type="button" hidden>Reintentar</button>
+  </div>
+  <noscript>Activa JavaScript en tu navegador para abrir la biblioteca de Lira.</noscript>
+  <script>
+    window.liraLoadingError = function () {
+      document.getElementById('loading-message').textContent =
+        'No pudimos abrir Lira. Revisa tu conexión e inténtalo otra vez.';
+      document.getElementById('retry').hidden = false;
+    };
+    document.getElementById('retry').addEventListener('click', function () {
+      window.location.reload();
+    });
+    window.addEventListener('flutter-first-frame', function () {
+      document.getElementById('loading')?.remove();
+    }, { once: true });
+  </script>
+  <script src="flutter_bootstrap.js" async onerror="window.liraLoadingError()"></script>
 </body>
 </html>

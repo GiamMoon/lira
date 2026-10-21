@@ -43,8 +43,7 @@ class LocalReadingProgressRepository implements ReadingProgressRepository {
     try {
       final decoded = jsonDecode(raw) as Map<String, dynamic>;
       return decoded.map(
-        (key, value) =>
-            MapEntry(key, Map<String, dynamic>.from(value as Map)),
+        (key, value) => MapEntry(key, Map<String, dynamic>.from(value as Map)),
       );
     } on FormatException {
       // Dato corrupto: se descarta en silencio antes que romper la app.

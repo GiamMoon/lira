@@ -23,7 +23,9 @@ class LocalActivityResponseRepository implements ActivityResponseRepository {
             activityId: entry.key,
             content: (entry.value['content'] as String?) ?? '',
             createdAt:
-                DateTime.tryParse((entry.value['created_at'] as String?) ?? '') ??
+                DateTime.tryParse(
+                  (entry.value['created_at'] as String?) ?? '',
+                ) ??
                 DateTime.now(),
             isShared: (entry.value['is_shared'] as bool?) ?? false,
           ),

@@ -47,9 +47,7 @@ class _ClosingScreenState extends ConsumerState<ClosingScreen>
   }
 
   Future<void> _submit() async {
-    await ref
-        .read(closingViewModelProvider(widget.bookId).notifier)
-        .submit();
+    await ref.read(closingViewModelProvider(widget.bookId).notifier).submit();
     if (mounted) _goToLibrary();
   }
 
@@ -217,8 +215,9 @@ class _ClosingForm extends ConsumerWidget {
                     TextButton(
                       onPressed: onSkip,
                       style: TextButton.styleFrom(
-                        foregroundColor: theme.colorScheme.onSurface
-                            .withValues(alpha: 0.7),
+                        foregroundColor: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.7,
+                        ),
                       ),
                       child: const Text('Prefiero no decir nada'),
                     ),
@@ -308,7 +307,11 @@ class _Staggered extends StatelessWidget {
   Widget build(BuildContext context) {
     final curved = CurvedAnimation(
       parent: animation,
-      curve: Interval(begin, (begin + 0.35).clamp(0.0, 1.0), curve: Motion.enter),
+      curve: Interval(
+        begin,
+        (begin + 0.35).clamp(0.0, 1.0),
+        curve: Motion.enter,
+      ),
     );
 
     return AnimatedBuilder(

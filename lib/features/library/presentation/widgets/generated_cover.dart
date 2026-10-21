@@ -66,11 +66,7 @@ class GeneratedCover extends StatelessWidget {
                       _PaintedCover(book: book, palette: palette, seed: seed),
                   frameBuilder: (context, child, frame, wasSync) =>
                       frame == null && !wasSync
-                      ? _PaintedCover(
-                          book: book,
-                          palette: palette,
-                          seed: seed,
-                        )
+                      ? _PaintedCover(book: book, palette: palette, seed: seed)
                       : child,
                 ),
         ),
@@ -205,12 +201,15 @@ class _CoverPainter extends CustomPainter {
       halo,
       size.width * 0.62,
       Paint()
-        ..shader = RadialGradient(
-          colors: <Color>[
-            AppColors.cream.withValues(alpha: 0.16),
-            AppColors.cream.withValues(alpha: 0),
-          ],
-        ).createShader(Rect.fromCircle(center: halo, radius: size.width * 0.62)),
+        ..shader =
+            RadialGradient(
+              colors: <Color>[
+                AppColors.cream.withValues(alpha: 0.16),
+                AppColors.cream.withValues(alpha: 0),
+              ],
+            ).createShader(
+              Rect.fromCircle(center: halo, radius: size.width * 0.62),
+            ),
     );
 
     // Lomo: la franja oscura del canto izquierdo que hace que se lea "libro".

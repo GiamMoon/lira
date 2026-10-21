@@ -3,12 +3,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import '../theme/app_tokens.dart';
 
-/// Fondo vivo de Lira: manchas de tinta difusas que orbitan lentamente.
-///
-/// Es lo que hace que una pantalla estática (splash, vacío, lector) se sienta
-/// "respirando" sin recurrir a vídeo ni a Lottie. Se dibuja en un único
-/// `CustomPaint`, por lo que cuesta un repaint por frame y cero rebuilds.
 class AuroraBackground extends StatefulWidget {
   const AuroraBackground({
     this.baseColor = AppColors.cream,
@@ -29,8 +25,18 @@ class _AuroraBackgroundState extends State<AuroraBackground>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     vsync: this,
-    duration: const Duration(seconds: 22),
-  )..repeat();
+    duration: Motion.aurora,
+  );
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _controller.stop();
+    } else if (!_controller.isAnimating) {
+      _controller.repeat();
+    }
+  }
 
   @override
   void dispose() {

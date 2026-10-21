@@ -29,14 +29,16 @@ class LibraryState {
   List<Book> get visibleBooks {
     final needle = query.trim().toLowerCase();
 
-    return books.where((book) {
-      final matchesCategory = category == null || book.category == category;
-      final matchesQuery =
-          needle.isEmpty ||
-          book.title.toLowerCase().contains(needle) ||
-          book.author.toLowerCase().contains(needle);
-      return matchesCategory && matchesQuery;
-    }).toList(growable: false);
+    return books
+        .where((book) {
+          final matchesCategory = category == null || book.category == category;
+          final matchesQuery =
+              needle.isEmpty ||
+              book.title.toLowerCase().contains(needle) ||
+              book.author.toLowerCase().contains(needle);
+          return matchesCategory && matchesQuery;
+        })
+        .toList(growable: false);
   }
 
   bool get hasResults => visibleBooks.isNotEmpty;

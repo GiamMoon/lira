@@ -134,6 +134,22 @@ _buildContainer({
 
 void main() {
   group('ReaderViewModel', () {
+    test('el índice salta de capítulo y volver no borra el avance', () async {
+      final harness = _buildContainer();
+      final provider = readerViewModelProvider(_bookId);
+      await harness.container.read(provider.future);
+      final vm = harness.container.read(provider.notifier);
+      await vm.goToChapter(1);
+      expect(harness.container.read(provider).requireValue.currentIndex, 1);
+      expect(harness.progress.saved[_bookId]?.chaptersRead, 1);
+      await vm.goToChapter(0);
+      expect(harness.container.read(provider).requireValue.currentIndex, 0);
+      expect(harness.progress.saved[_bookId]?.chaptersRead, 1);
+      await vm.goToChapter(-1);
+      await vm.goToChapter(100);
+      expect(harness.container.read(provider).requireValue.currentIndex, 0);
+    });
+
     test('abre por el principio cuando no hay progreso', () async {
       final harness = _buildContainer();
 

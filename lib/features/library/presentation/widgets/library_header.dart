@@ -4,15 +4,12 @@ import '../../../../core/config/app_config.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_tokens.dart';
 
-/// Cabecera de la biblioteca: saludo por hora del día y buscador.
-///
-/// El saludo existe para que la app se sienta de quien la abre, no de la
-/// institución.
 class LibraryHeader extends StatelessWidget {
   const LibraryHeader({
     required this.onQueryChanged,
     required this.onOpenCreations,
     required this.onOpenSettings,
+    required this.onRefresh,
     this.name = '',
     super.key,
   });
@@ -20,8 +17,8 @@ class LibraryHeader extends StatelessWidget {
   final ValueChanged<String> onQueryChanged;
   final VoidCallback onOpenCreations;
   final VoidCallback onOpenSettings;
+  final VoidCallback onRefresh;
 
-  /// Cómo quiere que le llamen. Vacío = saludo a secas, sin inventarse nada.
   final String name;
 
   static String _greetingFor(int hour) {
@@ -51,7 +48,12 @@ class LibraryHeader extends StatelessWidget {
                   style: theme.textTheme.labelSmall,
                 ),
               ),
-              // Atajo a lo suyo: lo que ha escrito y lo que lleva leído.
+              IconButton(
+                onPressed: onRefresh,
+                icon: const Icon(Icons.refresh_rounded, size: 20),
+                tooltip: 'Actualizar biblioteca',
+                visualDensity: VisualDensity.compact,
+              ),
               IconButton(
                 onPressed: onOpenCreations,
                 icon: const Icon(Icons.edit_note_rounded, size: 22),
@@ -70,9 +72,6 @@ class LibraryHeader extends StatelessWidget {
             '¿Qué vas a leer hoy?',
             style: theme.textTheme.displayMedium?.copyWith(fontSize: 30),
           ),
-          // Sin esta señal es imposible distinguir "Supabase no responde" de
-          // "arranqué sin las credenciales": la app se ve igual en los dos
-          // casos y el catálogo local se parece al real a propósito.
           if (!AppConfig.hasRemoteBackend) ...<Widget>[
             const SizedBox(height: Insets.md),
             const _AvisoCatalogoLocal(),
@@ -116,11 +115,6 @@ class LibraryHeader extends StatelessWidget {
   }
 }
 
-/// Aviso de que la app está leyendo el catálogo local, no Supabase.
-///
-/// Existe porque los dos casos se ven idénticos: la app arranca igual, sin
-/// ningún error, y el catálogo de respaldo se parece al real a propósito. Sin
-/// esta etiqueta es imposible saber que faltó pasar las credenciales.
 class _AvisoCatalogoLocal extends StatelessWidget {
   const _AvisoCatalogoLocal();
 
@@ -129,10 +123,7 @@ class _AvisoCatalogoLocal extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: Insets.md,
-        vertical: 6,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: Insets.md, vertical: 6),
       decoration: BoxDecoration(
         color: AppColors.gold.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(Radii.pill),

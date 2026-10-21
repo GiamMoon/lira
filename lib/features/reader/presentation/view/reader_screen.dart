@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show ScrollDirection;
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../app/router/app_route.dart';
 import '../../../../app/router/app_navigation.dart';
+import '../../../../app/router/app_route.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/animated_progress_bar.dart';
@@ -18,15 +19,10 @@ import '../view_model/reader_view_model.dart';
 import '../widgets/activity_invitation.dart';
 import '../widgets/activity_sheet.dart';
 import '../widgets/chapter_content.dart';
+import '../widgets/chapter_index.dart';
 import '../widgets/leave_book_dialog.dart';
 import '../widgets/text_size_sheet.dart';
 
-/// El lector.
-///
-/// Un capítulo por pantalla, a su ritmo, sin nada que obligue a nada. Toda la
-/// interfaz que no es texto se mantiene al mínimo: la barra superior se retira
-/// sola en cuanto el estudiante avanza en la lectura y vuelve al primer gesto
-/// hacia arriba.
 class ReaderScreen extends ConsumerStatefulWidget {
   const ReaderScreen({required this.bookId, super.key});
 
@@ -39,17 +35,13 @@ class ReaderScreen extends ConsumerStatefulWidget {
 class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   final ScrollController _scrollController = ScrollController();
 
-  /// Invitaciones que el lector ya descartó en esta sesión. Es estado de UI
-  /// efímero a propósito: mañana puede volver a aparecer.
+  /// Se reinicia al cerrar el lector; no modifica las respuestas guardadas.
   final Set<String> _dismissedChapters = <String>{};
 
-  /// La barra superior está a la vista.
   bool _chromeVisible = true;
 
-  /// Hacia dónde fue el último salto de capítulo. La página nueva entra por
-  /// el lado contrario al que se va la vieja; si entrara siempre por la
-  /// derecha, volver atrás se sentiría como seguir avanzando.
   bool _forward = true;
+  bool _changingChapter = false;
 
   @override
   void initState() {
@@ -69,8 +61,6 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     if (!_scrollController.hasClients) return;
     final posicion = _scrollController.position;
 
-    // Cerca del inicio siempre se ve; leyendo hacia abajo se retira; al primer
-    // gesto hacia arriba vuelve, que es cuando se busca el menú o el atrás.
     final visible =
         posicion.pixels <= 24 ||
         posicion.userScrollDirection == ScrollDirection.forward;
@@ -118,29 +108,56 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   }
 
   void _previous() {
+    if (_changingChapter) return;
     setState(() => _forward = false);
     ref.read(readerViewModelProvider(widget.bookId).notifier).previousChapter();
     _scrollToTop();
   }
 
   Future<void> _next() async {
-    setState(() => _forward = true);
     final provider = readerViewModelProvider(widget.bookId);
-    await ref.read(provider.notifier).nextChapter();
-    if (!mounted) return;
-
-    if (ref.read(provider).value?.isFinished ?? false) {
-      // Sustituye al lector en la pila: al cerrar una obra se sigue hacia el
-      // cierre, y de ahí a la biblioteca. Volver al último capítulo no tiene
-      // sentido.
-      context.pushReplacementNamed(
-        AppRoute.closing.routeName,
-        pathParameters: <String, String>{AppRoute.bookIdParam: widget.bookId},
-      );
+    final state = ref.read(provider).value;
+    if (_changingChapter ||
+        state == null ||
+        !state.hasContent ||
+        state.isFinished) {
       return;
     }
+    _changingChapter = true;
+    try {
+      setState(() => _forward = true);
+      await ref.read(provider.notifier).nextChapter();
+      if (!mounted) return;
 
-    _scrollToTop();
+      if (ref.read(provider).value?.isFinished ?? false) {
+        // Impide regresar al lector después del cierre de la obra.
+        context.pushReplacementNamed(
+          AppRoute.closing.routeName,
+          pathParameters: <String, String>{AppRoute.bookIdParam: widget.bookId},
+        );
+        return;
+      }
+
+      _scrollToTop();
+    } finally {
+      _changingChapter = false;
+    }
+  }
+
+  Future<void> _goToChapter(int index) async {
+    if (_changingChapter) return;
+    final current = ref.read(readerViewModelProvider(widget.bookId)).value;
+    if (current == null || index == current.currentIndex) return;
+    _changingChapter = true;
+    try {
+      setState(() => _forward = index > current.currentIndex);
+      await ref
+          .read(readerViewModelProvider(widget.bookId).notifier)
+          .goToChapter(index);
+      if (mounted) _scrollToTop();
+    } finally {
+      _changingChapter = false;
+    }
   }
 
   @override
@@ -150,52 +167,77 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     final escala = ref.watch(readerSettingsProvider).scale;
     final fuente = ref.watch(preferencesProvider).font;
 
-    return Scaffold(
-      body: SafeArea(
-        child: reader.when(
-          loading: () => const Center(
-            child: CircularProgressIndicator(color: AppColors.wine),
-          ),
-          error: (error, _) => _ReaderError(
-            message: error is BookNotFoundException
-                ? 'Esta obra ya no está disponible.'
-                : 'No pudimos abrir el texto. Revisa tu conexión.',
-            onBack: context.backToLibrary,
-          ),
-          data: (state) => Column(
-            children: <Widget>[
-              _ReaderBar(
-                title: state.book.title,
-                fraction: state.fraction,
-                visible: _chromeVisible,
+    return CallbackShortcuts(
+      bindings: <ShortcutActivator, VoidCallback>{
+        const SingleActivator(LogicalKeyboardKey.arrowRight, control: true):
+            _next,
+        const SingleActivator(LogicalKeyboardKey.arrowLeft, control: true):
+            _previous,
+      },
+      child: Focus(
+        autofocus: true,
+        child: Scaffold(
+          body: SafeArea(
+            child: reader.when(
+              loading: () => const Center(
+                child: CircularProgressIndicator(color: AppColors.wine),
+              ),
+              error: (error, _) => _ReaderError(
+                message: error is BookNotFoundException
+                    ? 'Esta obra ya no está disponible.'
+                    : 'No pudimos abrir el texto. Revisa tu conexión.',
                 onBack: context.backToLibrary,
-                onLeave: _leave,
-                onTextSize: () => showTextSizeSheet(context),
               ),
-              Expanded(
-                child: !state.hasContent
-                    ? const _NoContentYet()
-                    : _ChapterView(
-                        state: state,
-                        controller: _scrollController,
-                        scale: escala,
-                        forward: _forward,
-                        textStyle: fuente.style(
-                          Theme.of(context).colorScheme.onSurface,
+              data: (state) => Row(
+                children: [
+                  if (MediaQuery.sizeOf(context).width >=
+                      AppLayout.desktopBreakpoint)
+                    ChapterIndex(state: state, onSelect: _goToChapter),
+                  Expanded(
+                    child: Column(
+                      children: <Widget>[
+                        _ReaderBar(
+                          title: state.book.title,
+                          fraction: state.fraction,
+                          visible:
+                              _chromeVisible ||
+                              MediaQuery.sizeOf(context).width >=
+                                  AppLayout.desktopBreakpoint,
+                          onBack: context.backToLibrary,
+                          onLeave: _leave,
+                          onTextSize: () => showTextSizeSheet(context),
                         ),
-                        isDismissed: _dismissedChapters.contains(
-                          state.currentChapter?.id,
+                        Expanded(
+                          child: !state.hasContent
+                              ? const _NoContentYet()
+                              : _ChapterView(
+                                  state: state,
+                                  controller: _scrollController,
+                                  scale: escala,
+                                  forward: _forward,
+                                  textStyle: fuente.style(
+                                    Theme.of(context).colorScheme.onSurface,
+                                  ),
+                                  isDismissed: _dismissedChapters.contains(
+                                    state.currentChapter?.id,
+                                  ),
+                                  onDismissActivities: () => setState(() {
+                                    _dismissedChapters.add(
+                                      state.currentChapter!.id,
+                                    );
+                                  }),
+                                  onChooseActivity: (activity) =>
+                                      _openActivity(activity, state),
+                                  onPrevious: _previous,
+                                  onNext: _next,
+                                ),
                         ),
-                        onDismissActivities: () => setState(() {
-                          _dismissedChapters.add(state.currentChapter!.id);
-                        }),
-                        onChooseActivity: (activity) =>
-                            _openActivity(activity, state),
-                        onPrevious: _previous,
-                        onNext: _next,
-                      ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -203,10 +245,6 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   }
 }
 
-/// Barra superior mínima + hilo de progreso de la obra.
-///
-/// El hilo de progreso nunca se oculta: es la única señal de avance y ocupa
-/// dos píxeles.
 class _ReaderBar extends StatelessWidget {
   const _ReaderBar({
     required this.title,
@@ -329,21 +367,22 @@ class _ChapterView extends StatelessWidget {
     final theme = Theme.of(context);
     final chapter = state.currentChapter!;
     final activities = state.currentActivities;
-    final width = AppLayout.readingMaxWidth;
+    const width = AppLayout.readingMaxWidth;
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
 
     return SwipeNavigator(
       onNext: onNext,
       onPrevious: state.isFirstChapter ? null : onPrevious,
       child: AnimatedSwitcher(
-        duration: Motion.medium,
+        duration: reduceMotion ? Duration.zero : Motion.medium,
         switchInCurve: Motion.emphasized,
-        // El capítulo nuevo entra deslizándose, como una página que pasa, y
-        // por el lado que corresponde al sentido de la lectura.
         transitionBuilder: (child, animation) => FadeTransition(
           opacity: animation,
           child: SlideTransition(
             position: Tween<Offset>(
-              begin: Offset(forward ? 0.06 : -0.06, 0),
+              begin: reduceMotion
+                  ? Offset.zero
+                  : Offset(forward ? 0.06 : -0.06, 0),
               end: Offset.zero,
             ).animate(animation),
             child: child,
@@ -371,10 +410,12 @@ class _ChapterView extends StatelessWidget {
                   const SizedBox(height: Insets.sm),
                   Text(chapter.title, style: theme.textTheme.displayMedium),
                   const SizedBox(height: Insets.xl),
-                  ChapterContent(
-                    blocks: chapter.blocks,
-                    scale: scale,
-                    style: textStyle,
+                  SelectionArea(
+                    child: ChapterContent(
+                      blocks: chapter.blocks,
+                      scale: scale,
+                      style: textStyle,
+                    ),
                   ),
                   const SizedBox(height: Insets.xl),
                   if (activities.isNotEmpty && !isDismissed) ...<Widget>[
@@ -386,7 +427,10 @@ class _ChapterView extends StatelessWidget {
                     ),
                     const SizedBox(height: Insets.xl),
                   ],
-                  Row(
+                  Wrap(
+                    alignment: WrapAlignment.spaceBetween,
+                    spacing: Insets.lg,
+                    runSpacing: Insets.sm,
                     children: <Widget>[
                       if (!state.isFirstChapter)
                         TextButton.icon(
@@ -394,7 +438,6 @@ class _ChapterView extends StatelessWidget {
                           icon: const Icon(Icons.arrow_back_rounded, size: 16),
                           label: const Text('Anterior'),
                         ),
-                      const Spacer(),
                       FilledButton.icon(
                         onPressed: onNext,
                         style: FilledButton.styleFrom(

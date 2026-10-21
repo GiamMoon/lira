@@ -7,10 +7,6 @@ import '../../domain/entities/book.dart';
 import '../../domain/entities/reading_progress.dart';
 import 'generated_cover.dart';
 
-/// Ficha de la obra antes de entrar a leer.
-///
-/// Da contexto (de qué va, cuánto dura) y una sola acción evidente. Si ya se
-/// está leyendo, aparece además la salida discreta para dejarlo.
 Future<void> showBookSheet(
   BuildContext context, {
   required Book book,
@@ -47,6 +43,8 @@ class _BookSheet extends StatelessWidget {
     final theme = Theme.of(context);
     final reading = progress;
     final isReading = reading != null && reading.isActive;
+    final desktop =
+        MediaQuery.sizeOf(context).width >= AppLayout.expandedBreakpoint;
 
     return Container(
       constraints: BoxConstraints(
@@ -71,21 +69,41 @@ class _BookSheet extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Center(
-                child: Container(
-                  width: 44,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: AppColors.wineMist,
-                    borderRadius: BorderRadius.circular(Radii.pill),
+              if (desktop)
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'ACERCA DE LA OBRA',
+                        style: theme.textTheme.labelSmall,
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: 'Cerrar ficha',
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.close_rounded),
+                    ),
+                  ],
+                )
+              else
+                Center(
+                  child: Container(
+                    width: 44,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: AppColors.wineMist,
+                      borderRadius: BorderRadius.circular(Radii.pill),
+                    ),
                   ),
                 ),
-              ),
               const SizedBox(height: Insets.xl),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  SizedBox(width: 92, child: GeneratedCover(book: book)),
+                  SizedBox(
+                    width: desktop ? AppLayout.heroCoverWidth : 92,
+                    child: GeneratedCover(book: book),
+                  ),
                   const SizedBox(width: Insets.lg),
                   Expanded(
                     child: Column(
@@ -171,13 +189,16 @@ class _MetaChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: Insets.md, vertical: 5),
       decoration: BoxDecoration(
-        color: AppColors.wine.withValues(alpha: 0.08),
+        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(Radii.pill),
       ),
       child: Text(
         label,
-        style: Theme.of(context).textTheme.labelSmall
-            ?.copyWith(color: AppColors.wine, letterSpacing: 0.2, fontSize: 11),
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: Theme.of(context).colorScheme.primary,
+          letterSpacing: 0.2,
+          fontSize: 11,
+        ),
       ),
     );
   }

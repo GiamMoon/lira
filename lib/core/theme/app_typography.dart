@@ -1,16 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Tipografía de Lira.
-///
-/// Pareja tipográfica:
-/// - **Fraunces** (serif de contraste alto) para títulos y la voz editorial.
-///   Da el aire de libro sin sentirse acartonado.
-/// - **Plus Jakarta Sans** para interfaz y cuerpo: geométrica, joven, legible
-///   en pantallas pequeñas.
-///
-/// TODO(assets): empaquetar los .ttf en `assets/fonts/` para que la primera
-/// ejecución no dependa de red (google_fonts descarga y cachea en runtime).
 abstract final class AppTypography {
   static TextTheme textTheme(Color onSurface, Color muted) {
     final display = GoogleFonts.fraunces(color: onSurface);
@@ -60,14 +50,8 @@ abstract final class AppTypography {
     );
   }
 
-  /// Estilo reservado para el lector: serif, cómodo, medida larga.
-  ///
-  /// Es el que se usa cuando nadie ha elegido otra cosa. Las tres familias de
-  /// lectura viven aquí, en el tema; cuál de ellas se aplica lo decide la
-  /// preferencia del estudiante (`ReadingFont`).
   static TextStyle reading(Color color) => readingSerif(color);
 
-  /// Serif de libro. El aire de una novela impresa.
   static TextStyle readingSerif(Color color) => GoogleFonts.fraunces(
     color: color,
     fontSize: 19,
@@ -75,7 +59,6 @@ abstract final class AppTypography {
     fontWeight: FontWeight.w400,
   );
 
-  /// Sans de pantalla: más estrecha, rinde mejor en móviles pequeños.
   static TextStyle readingSans(Color color) => GoogleFonts.plusJakartaSans(
     color: color,
     fontSize: 17.5,
@@ -83,9 +66,7 @@ abstract final class AppTypography {
     fontWeight: FontWeight.w400,
   );
 
-  /// Atkinson Hyperlegible, diseñada para baja visión: cada letra se
-  /// distingue de la que se le parece (l/I/1, O/0). Pide más interlineado
-  /// porque tiene el ojo mucho mayor que una serif.
+  /// Fuente diseñada para distinguir caracteres similares en lectura con baja visión.
   static TextStyle readingLegible(Color color) =>
       GoogleFonts.atkinsonHyperlegible(
         color: color,

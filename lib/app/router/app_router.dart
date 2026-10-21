@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -15,14 +16,10 @@ import 'app_route.dart';
 
 part 'app_router.g.dart';
 
-/// Router de la app.
-///
-/// Se expone como provider para que dependencias futuras (sesión, feature
-/// flags) puedan participar en `redirect` sin globales.
 @Riverpod(keepAlive: true)
 GoRouter appRouter(Ref ref) {
   final router = GoRouter(
-    initialLocation: AppRoute.splash.path,
+    initialLocation: kIsWeb ? AppRoute.library.path : AppRoute.splash.path,
     errorBuilder: (context, _) => ComingSoonScreen(
       title: 'No encontramos esta página',
       subtitle: 'Puedes volver a la biblioteca y elegir una obra.',

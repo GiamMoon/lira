@@ -20,21 +20,22 @@ class CategoryFilter extends StatelessWidget {
   Widget build(BuildContext context) {
     final options = <BookCategory?>[null, ...BookCategory.values];
 
-    return SizedBox(
-      height: 38,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: Insets.xl),
-        itemCount: options.length,
-        separatorBuilder: (_, _) => const SizedBox(width: Insets.sm),
-        itemBuilder: (context, index) {
-          final option = options[index];
-          return _Chip(
-            label: option?.label ?? 'Todos',
-            isSelected: option == selected,
-            onTap: () => onSelected(option),
-          );
-        },
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: Insets.xl),
+      child: Wrap(
+        spacing: Insets.sm,
+        runSpacing: Insets.sm,
+        children: [
+          for (final option in options)
+            SizedBox(
+              height: 38 * MediaQuery.textScalerOf(context).scale(1),
+              child: _Chip(
+                label: option?.label ?? 'Todos',
+                isSelected: option == selected,
+                onTap: () => onSelected(option),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -61,7 +62,6 @@ class _Chip extends StatelessWidget {
         duration: Motion.fast,
         curve: Motion.enter,
         padding: const EdgeInsets.symmetric(horizontal: Insets.lg),
-        alignment: Alignment.center,
         decoration: BoxDecoration(
           color: isSelected ? AppColors.wine : Colors.transparent,
           borderRadius: BorderRadius.circular(Radii.pill),
@@ -71,11 +71,16 @@ class _Chip extends StatelessWidget {
                 : theme.colorScheme.outline.withValues(alpha: 0.7),
           ),
         ),
-        child: Text(
-          label,
-          style: theme.textTheme.labelLarge?.copyWith(
-            fontSize: 13,
-            color: isSelected ? AppColors.creamLight : theme.colorScheme.onSurface,
+        child: Center(
+          widthFactor: 1,
+          child: Text(
+            label,
+            style: theme.textTheme.labelLarge?.copyWith(
+              fontSize: 13,
+              color: isSelected
+                  ? AppColors.creamLight
+                  : theme.colorScheme.onSurface,
+            ),
           ),
         ),
       ),

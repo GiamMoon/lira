@@ -14,6 +14,10 @@ import 'core/network/supabase_session.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  if (AppConfig.requireRemoteBackend && !AppConfig.hasRemoteBackend) {
+    throw StateError('Falta la configuración del catálogo de Lira.');
+  }
+
   if (!kIsWeb) {
     await SystemChrome.setPreferredOrientations(<DeviceOrientation>[
       DeviceOrientation.portraitUp,
@@ -21,22 +25,15 @@ Future<void> main() async {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
   }
 
-  // La URL también refleja las pantallas abiertas con pushNamed: se pueden
-  // recargar, compartir y abrir en otra pestaña conservando el destino.
   GoRouter.optionURLReflectsImperativeAPIs = true;
 
-  // Única raíz de composición: las dependencias asíncronas se resuelven aquí
-  // y se inyectan al árbol ya listas.
   final preferences = await SharedPreferences.getInstance();
 
-  // Sin credenciales, Lira corre igual contra el catálogo semilla local.
   if (AppConfig.hasRemoteBackend) {
     await Supabase.initialize(
       url: AppConfig.supabaseUrl,
       publishableKey: AppConfig.supabaseKey,
     );
-    // Sesión anónima: sin ella las tablas del estudiante son inalcanzables
-    // (RLS contra auth.uid()) y el progreso se quedaría sólo en el móvil.
     await asegurarSesion();
   }
 

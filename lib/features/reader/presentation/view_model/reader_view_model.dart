@@ -10,12 +10,6 @@ import 'reader_state.dart';
 
 part 'reader_view_model.g.dart';
 
-/// ViewModel del lector, uno por obra abierta.
-///
-/// Reglas de producto que se cumplen aquí, no en la UI:
-/// - el avance se guarda solo, sin botón de "guardar";
-/// - dejar un libro conserva el progreso;
-/// - responder una dinámica es siempre opcional y nunca bloquea la lectura.
 @riverpod
 class ReaderViewModel extends _$ReaderViewModel {
   @override
@@ -34,8 +28,7 @@ class ReaderViewModel extends _$ReaderViewModel {
         .fetchAll();
     final progress = await _currentProgress(bookId);
 
-    // Se retoma justo donde quedó. Si ya lo había terminado, se reabre en el
-    // último capítulo en vez de mandarlo fuera de rango.
+    // Limita la posición guardada al catálogo actual de capítulos.
     final resumeAt = chapters.isEmpty
         ? 0
         : (progress?.chaptersRead ?? 0).clamp(0, chapters.length - 1);
@@ -51,25 +44,29 @@ class ReaderViewModel extends _$ReaderViewModel {
     );
   }
 
-  /// Avanza un capítulo y persiste el progreso. En el último, cierra la obra.
   Future<void> nextChapter() async {
     final current = state.value;
     if (current == null || !current.hasContent) return;
 
     if (current.isLastChapter) {
-      await _saveProgress(current, chaptersRead: current.chapters.length,
-          status: ReadingStatus.finished);
+      await _saveProgress(
+        current,
+        chaptersRead: current.chapters.length,
+        status: ReadingStatus.finished,
+      );
       state = AsyncData<ReaderState>(current.copyWith(isFinished: true));
       return;
     }
 
     final next = current.currentIndex + 1;
-    await _saveProgress(current, chaptersRead: next,
-        status: ReadingStatus.reading);
+    await _saveProgress(
+      current,
+      chaptersRead: next,
+      status: ReadingStatus.reading,
+    );
     state = AsyncData<ReaderState>(current.copyWith(currentIndex: next));
   }
 
-  /// Volver atrás no reduce el progreso: releer no es desleer.
   void previousChapter() {
     final current = state.value;
     if (current == null || current.isFirstChapter) return;
@@ -78,8 +75,22 @@ class ReaderViewModel extends _$ReaderViewModel {
     );
   }
 
-  /// Guarda lo que el estudiante creó. No valida nada: no hay respuesta
-  /// correcta y tampoco una longitud correcta.
+  Future<void> goToChapter(int index) async {
+    final current = state.value;
+    if (current == null ||
+        index < 0 ||
+        index >= current.chapters.length ||
+        index == current.currentIndex) {
+      return;
+    }
+    await _saveProgress(
+      current,
+      chaptersRead: index,
+      status: ReadingStatus.reading,
+    );
+    state = AsyncData<ReaderState>(current.copyWith(currentIndex: index));
+  }
+
   Future<void> answerActivity(Activity activity, String content) async {
     final current = state.value;
     if (current == null) return;
@@ -101,13 +112,15 @@ class ReaderViewModel extends _$ReaderViewModel {
     );
   }
 
-  /// "Guardar y salir": el libro sale de la estantería activa y el avance
-  /// queda intacto para cuando vuelva.
+  /// Conserva el avance y retira la obra de las lecturas activas.
   Future<void> leaveBook() async {
     final current = state.value;
     if (current == null) return;
-    await _saveProgress(current, chaptersRead: current.chaptersRead,
-        status: ReadingStatus.abandoned);
+    await _saveProgress(
+      current,
+      chaptersRead: current.chaptersRead,
+      status: ReadingStatus.abandoned,
+    );
   }
 
   Future<ReadingProgress?> _currentProgress(String bookId) async {
@@ -122,15 +135,21 @@ class ReaderViewModel extends _$ReaderViewModel {
     ReaderState current, {
     required int chaptersRead,
     required ReadingStatus status,
-  }) => ref
-      .read(readingProgressRepositoryProvider)
-      .save(
-        ReadingProgress(
-          bookId: current.book.id,
-          chaptersRead: chaptersRead,
-          chapterCount: current.chapters.length,
-          status: status,
-          updatedAt: DateTime.now(),
-        ),
-      );
+  }) async {
+    final previous = await _currentProgress(current.book.id);
+    final furthest = previous != null && previous.chaptersRead > chaptersRead
+        ? previous.chaptersRead
+        : chaptersRead;
+    await ref
+        .read(readingProgressRepositoryProvider)
+        .save(
+          ReadingProgress(
+            bookId: current.book.id,
+            chaptersRead: furthest,
+            chapterCount: current.chapters.length,
+            status: status,
+            updatedAt: DateTime.now(),
+          ),
+        );
+  }
 }

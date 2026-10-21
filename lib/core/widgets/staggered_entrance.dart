@@ -1,15 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../theme/app_tokens.dart';
 
-/// Entrada escalonada: el contenido aparece subiendo y con un retraso que
-/// depende de su posición en la lista.
-///
-/// Es lo que hace que una rejilla se sienta "servida" en vez de volcada de
-/// golpe. Se centraliza aquí para que el ritmo sea el mismo en toda la app.
-///
-/// Respeta la preferencia de accesibilidad "reducir movimiento": si el sistema
-/// la tiene activada, el contenido aparece sin animación en vez de ignorarla.
 class StaggeredEntrance extends StatefulWidget {
   const StaggeredEntrance({
     required this.child,
@@ -22,16 +16,13 @@ class StaggeredEntrance extends StatefulWidget {
 
   final Widget child;
 
-  /// Posición en la lista. Marca cuánto espera antes de entrar.
   final int index;
 
-  /// Cuánto sube al aparecer, en píxeles.
   final double offset;
 
   final Duration stepDelay;
 
-  /// Tope de retrasos acumulables: sin esto, el elemento 40 de una rejilla
-  /// entraría más de dos segundos tarde.
+  /// Limita la espera en listas largas.
   final int maxSteps;
 
   @override
@@ -49,18 +40,28 @@ class _StaggeredEntranceState extends State<StaggeredEntrance>
     parent: _controller,
     curve: Motion.emphasized,
   );
+  Timer? _delay;
+  bool _scheduled = false;
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _delay?.cancel();
+      _controller.value = 1;
+      return;
+    }
+    if (_scheduled) return;
+    _scheduled = true;
     final pasos = widget.index.clamp(0, widget.maxSteps);
-    Future<void>.delayed(widget.stepDelay * pasos, () {
+    _delay = Timer(widget.stepDelay * pasos, () {
       if (mounted) _controller.forward();
     });
   }
 
   @override
   void dispose() {
+    _delay?.cancel();
     _controller.dispose();
     super.dispose();
   }

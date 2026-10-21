@@ -1,16 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive_sheet.dart';
 import '../../domain/entities/activity.dart';
 import 'activity_invitation.dart';
 
-/// Hoja para responder una dinámica.
-///
-/// Devuelve el texto escrito, o `null` si el estudiante prefiere dejarlo.
-/// No hay validación, ni longitud mínima, ni corrección: esa es justamente la
-/// idea.
+/// Devuelve la respuesta o null cuando el estudiante cancela.
 Future<String?> showActivitySheet(
   BuildContext context, {
   required Activity activity,
@@ -52,7 +47,6 @@ class _ActivitySheetState extends State<_ActivitySheet> {
     final hint = activity.hint;
 
     return Padding(
-      // Sube con el teclado: escribir no debería tapar lo que escribes.
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
       child: Container(
         decoration: BoxDecoration(

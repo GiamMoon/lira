@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../app/router/app_navigation.dart';
+import '../../../../app/router/app_route.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/aurora_background.dart';
 import '../../../../core/widgets/content_width.dart';
+import '../../../../core/widgets/desktop_frame.dart';
 import '../../../../core/widgets/glass_surface.dart';
 import '../../../../core/widgets/pressable.dart';
 import '../../../../core/widgets/staggered_entrance.dart';
@@ -13,10 +15,6 @@ import '../../../reader/presentation/view_model/reader_settings.dart';
 import '../../domain/entities/reading_font.dart';
 import '../view_model/preferences_view_model.dart';
 
-/// Ajustes: cómo se ve Lira y cómo se lee.
-///
-/// Todo lo de aquí se aplica al instante y se recuerda. No hay botón de
-/// guardar porque no hay nada que confirmar: se toca, se ve el cambio, y ya.
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -27,97 +25,103 @@ class SettingsScreen extends ConsumerWidget {
     final notifier = ref.read(preferencesProvider.notifier);
     final size = ref.watch(readerSettingsProvider);
 
-    return Scaffold(
-      body: Stack(
-        fit: StackFit.expand,
-        children: <Widget>[
-          AuroraBackground(
-            baseColor: theme.colorScheme.surface,
-            intensity: 0.4,
-          ),
-          SafeArea(
-            child: ContentWidth(
-              child: CustomScrollView(
-                slivers: <Widget>[
-                  SliverAppBar(
-                    pinned: true,
-                    backgroundColor: Colors.transparent,
-                    surfaceTintColor: Colors.transparent,
-                    title: Text('Ajustes', style: theme.textTheme.titleLarge),
-                    leading: IconButton(
-                      onPressed: context.backToLibrary,
-                      icon: const Icon(Icons.arrow_back_rounded),
-                      tooltip: 'Volver',
+    return DesktopFrame(
+      selected: AppRoute.settings,
+      child: Scaffold(
+        body: Stack(
+          fit: StackFit.expand,
+          children: <Widget>[
+            AuroraBackground(
+              baseColor: theme.colorScheme.surface,
+              intensity: 0.4,
+            ),
+            SafeArea(
+              child: ContentWidth(
+                child: CustomScrollView(
+                  slivers: <Widget>[
+                    SliverAppBar(
+                      pinned: true,
+                      backgroundColor: Colors.transparent,
+                      surfaceTintColor: Colors.transparent,
+                      title: Text('Ajustes', style: theme.textTheme.titleLarge),
+                      leading: IconButton(
+                        onPressed: context.backToLibrary,
+                        icon: const Icon(Icons.arrow_back_rounded),
+                        tooltip: 'Volver',
+                      ),
                     ),
-                  ),
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(
-                      Insets.xl,
-                      0,
-                      Insets.xl,
-                      Insets.huge,
-                    ),
-                    sliver: SliverList.list(
-                      children: <Widget>[
-                        StaggeredEntrance(
-                          child: _NameField(
-                            initial: prefs.name,
-                            onChanged: notifier.setName,
-                          ),
-                        ),
-                        const SizedBox(height: Insets.xl),
-                        StaggeredEntrance(
-                          index: 1,
-                          child: _Section(
-                            title: 'Aspecto',
-                            subtitle: 'Cómo se ve la app.',
-                            child: _ThemePicker(
-                              selected: prefs.themeMode,
-                              onSelected: notifier.selectTheme,
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(
+                        Insets.xl,
+                        0,
+                        Insets.xl,
+                        Insets.huge,
+                      ),
+                      sliver: SliverList.list(
+                        children: <Widget>[
+                          StaggeredEntrance(
+                            child: _NameField(
+                              initial: prefs.name,
+                              onChanged: notifier.setName,
                             ),
                           ),
-                        ),
-                        const SizedBox(height: Insets.xl),
-                        StaggeredEntrance(
-                          index: 2,
-                          child: _Section(
-                            title: 'Letra de lectura',
-                            subtitle: 'La que verás dentro de los libros.',
-                            child: _FontPicker(
-                              selected: prefs.font,
-                              onSelected: notifier.selectFont,
+                          const SizedBox(height: Insets.xl),
+                          StaggeredEntrance(
+                            index: 1,
+                            child: _Section(
+                              title: 'Aspecto',
+                              subtitle: 'Cómo se ve la app.',
+                              child: _ThemePicker(
+                                selected: prefs.themeMode,
+                                onSelected: notifier.selectTheme,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: Insets.xl),
-                        StaggeredEntrance(
-                          index: 3,
-                          child: _Section(
-                            title: 'Tamaño',
-                            subtitle: 'También puedes cambiarlo leyendo.',
-                            child: _SizePicker(
-                              selected: size,
-                              onSelected: ref
-                                  .read(readerSettingsProvider.notifier)
-                                  .select,
+                          const SizedBox(height: Insets.xl),
+                          StaggeredEntrance(
+                            index: 2,
+                            child: _Section(
+                              title: 'Letra de lectura',
+                              subtitle: 'La que verás dentro de los libros.',
+                              child: _FontPicker(
+                                selected: prefs.font,
+                                onSelected: notifier.selectFont,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: Insets.xl),
-                        StaggeredEntrance(
-                          index: 4,
-                          child: _Preview(font: prefs.font, scale: size.scale),
-                        ),
-                        const SizedBox(height: Insets.xxl),
-                        const StaggeredEntrance(index: 5, child: _Privacy()),
-                      ],
+                          const SizedBox(height: Insets.xl),
+                          StaggeredEntrance(
+                            index: 3,
+                            child: _Section(
+                              title: 'Tamaño',
+                              subtitle: 'También puedes cambiarlo leyendo.',
+                              child: _SizePicker(
+                                selected: size,
+                                onSelected: ref
+                                    .read(readerSettingsProvider.notifier)
+                                    .select,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: Insets.xl),
+                          StaggeredEntrance(
+                            index: 4,
+                            child: _Preview(
+                              font: prefs.font,
+                              scale: size.scale,
+                            ),
+                          ),
+                          const SizedBox(height: Insets.xxl),
+                          const StaggeredEntrance(index: 5, child: _Privacy()),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -151,8 +155,6 @@ class _Section extends StatelessWidget {
   }
 }
 
-/// El nombre es opcional y se puede borrar. Se guarda al escribir, sin botón:
-/// pedir "guardar" para un nombre es una ceremonia que no hace falta.
 class _NameField extends StatefulWidget {
   const _NameField({required this.initial, required this.onChanged});
 
@@ -310,8 +312,6 @@ class _FontPicker extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: Insets.xs),
-                        // La muestra se pinta con la fuente que describe: es
-                        // la única forma honesta de elegir una letra.
                         Text(
                           ReadingFont.sample,
                           style: fuente
@@ -396,7 +396,6 @@ class _Choice extends StatelessWidget {
   }
 }
 
-/// Un trozo de libro de verdad, con la letra y el tamaño elegidos.
 class _Preview extends StatelessWidget {
   const _Preview({required this.font, required this.scale});
 

@@ -40,9 +40,7 @@ class ActivityInvitation extends StatelessWidget {
           alpha: 0.65,
         ),
         borderRadius: BorderRadius.circular(Radii.lg),
-        border: Border.all(
-          color: AppColors.wine.withValues(alpha: 0.18),
-        ),
+        border: Border.all(color: AppColors.wine.withValues(alpha: 0.18)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

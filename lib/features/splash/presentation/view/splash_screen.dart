@@ -73,10 +73,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     });
 
     final state = ref.watch(splashViewModelProvider);
-    final logoWidth = math.min(
-      MediaQuery.sizeOf(context).width * 0.76,
-      360.0,
-    );
+    final logoWidth = math.min(MediaQuery.sizeOf(context).width * 0.76, 360.0);
 
     return Theme(
       data: AppTheme.light,
@@ -111,9 +108,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                       _SplashFooter(
                         intro: _intro,
                         state: state,
-                        onRetry: () => ref
-                            .read(splashViewModelProvider.notifier)
-                            .retry(),
+                        onRetry: () =>
+                            ref.read(splashViewModelProvider.notifier).retry(),
                       ),
                       const SizedBox(height: Insets.xxl),
                     ],

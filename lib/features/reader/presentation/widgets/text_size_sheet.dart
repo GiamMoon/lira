@@ -3,15 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_tokens.dart';
-import '../../../../core/widgets/adaptive_sheet.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/adaptive_sheet.dart';
 import '../../../../core/widgets/pressable.dart';
 import '../view_model/reader_settings.dart';
 
-/// Ajuste del tamaño de letra, con muestra en vivo.
-///
-/// El cambio se aplica al instante y sobre un texto de verdad: se elige
-/// mirando cómo se lee, no adivinando qué significa "Grande".
 Future<void> showTextSizeSheet(BuildContext context) {
   return showAdaptiveSheet<void>(
     context: context,

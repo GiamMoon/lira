@@ -43,6 +43,8 @@ class _FakeStore implements KeyValueStore {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('Preferences', () {
     test('sin nada guardado sigue al sistema, serif y sin nombre', () {
       final prefs = _build().container.read(preferencesProvider);

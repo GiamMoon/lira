@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/aurora_background.dart';
 import '../../../../core/widgets/content_width.dart';
+import '../../../../core/widgets/desktop_frame.dart';
 import '../../../../core/widgets/staggered_entrance.dart';
 import '../../../settings/presentation/view_model/preferences_view_model.dart';
 import '../../domain/entities/book.dart';
@@ -16,9 +17,9 @@ import '../widgets/book_sheet.dart';
 import '../widgets/book_tile.dart';
 import '../widgets/category_filter.dart';
 import '../widgets/continue_reading_card.dart';
+import '../widgets/desktop_library.dart';
 import '../widgets/library_header.dart';
 
-/// Pantalla principal: la estantería del estudiante.
 class LibraryScreen extends ConsumerWidget {
   const LibraryScreen({super.key});
 
@@ -26,28 +27,36 @@ class LibraryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final library = ref.watch(libraryViewModelProvider);
 
-    return Scaffold(
-      body: Stack(
-        fit: StackFit.expand,
-        children: <Widget>[
-          AuroraBackground(
-            baseColor: Theme.of(context).colorScheme.surface,
-            intensity: 0.5,
-          ),
-          SafeArea(
-            bottom: false,
-            child: ContentWidth(
-              maxWidth: AppLayout.libraryMaxWidth,
-              child: library.when(
-                loading: () => const _LibrarySkeleton(),
-                error: (error, _) => _LibraryError(
-                  onRetry: () => ref.invalidate(libraryViewModelProvider),
+    return DesktopFrame(
+      selected: AppRoute.library,
+      child: Scaffold(
+        body: Stack(
+          fit: StackFit.expand,
+          children: <Widget>[
+            if (MediaQuery.sizeOf(context).width < AppLayout.desktopBreakpoint)
+              AuroraBackground(
+                baseColor: Theme.of(context).colorScheme.surface,
+                intensity: 0.5,
+              ),
+            SafeArea(
+              bottom: false,
+              child: ContentWidth(
+                maxWidth:
+                    MediaQuery.sizeOf(context).width >=
+                        AppLayout.desktopBreakpoint
+                    ? AppLayout.desktopMaxWidth
+                    : AppLayout.libraryMaxWidth,
+                child: library.when(
+                  loading: () => const _LibrarySkeleton(),
+                  error: (error, _) => _LibraryError(
+                    onRetry: () => ref.invalidate(libraryViewModelProvider),
+                  ),
+                  data: (state) => _LibraryContent(state: state),
                 ),
-                data: (state) => _LibraryContent(state: state),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -69,8 +78,7 @@ class _LibraryContent extends ConsumerWidget {
       );
   }
 
-  /// Abre el lector y, al volver, refresca la estantería: el lector escribe el
-  /// progreso en el repositorio y aquí hay que reflejarlo.
+  /// Recarga el progreso al volver del lector.
   Future<void> _openReader(
     BuildContext context,
     WidgetRef ref,
@@ -83,8 +91,6 @@ class _LibraryContent extends ConsumerWidget {
     await ref.read(libraryViewModelProvider.notifier).refresh();
   }
 
-  /// Mantener pulsado: al libro, sin escalas. Para quien ya sabe cuál quiere
-  /// y no necesita volver a leer la sinopsis cada tarde.
   Future<void> _jumpIn(BuildContext context, WidgetRef ref, Book book) async {
     await ref.read(libraryViewModelProvider.notifier).startReading(book);
     if (context.mounted) await _openReader(context, ref, book);
@@ -118,6 +124,24 @@ class _LibraryContent extends ConsumerWidget {
     final currentProgress = state.currentProgress;
     final books = state.visibleBooks;
 
+    if (MediaQuery.sizeOf(context).width >= AppLayout.desktopBreakpoint) {
+      return DesktopLibrary(
+        state: state,
+        readerName: ref.watch(preferencesProvider).name,
+        onSearch: viewModel.search,
+        onFilterByCategory: viewModel.filterByCategory,
+        onRefresh: viewModel.refresh,
+        onOpenBook: (book) => _openBook(context, ref, book),
+        onContinue: (book) => _openReader(context, ref, book),
+        onAbandon: (book) async {
+          await viewModel.abandon(book);
+          if (context.mounted) {
+            _notify(context, 'Tu avance queda guardado por si vuelves.');
+          }
+        },
+      );
+    }
+
     return RefreshIndicator(
       onRefresh: viewModel.refresh,
       color: AppColors.wine,
@@ -129,6 +153,7 @@ class _LibraryContent extends ConsumerWidget {
               child: LibraryHeader(
                 name: ref.watch(preferencesProvider).name,
                 onQueryChanged: viewModel.search,
+                onRefresh: viewModel.refresh,
                 onOpenCreations: () =>
                     context.pushNamed(AppRoute.creations.routeName),
                 onOpenSettings: () =>
@@ -321,8 +346,6 @@ class _LibraryError extends StatelessWidget {
   }
 }
 
-/// Esqueleto de carga: mantiene la forma de la pantalla para que no haya
-/// salto de layout cuando llegan los datos.
 class _LibrarySkeleton extends StatefulWidget {
   const _LibrarySkeleton();
 

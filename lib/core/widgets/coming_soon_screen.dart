@@ -2,13 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_tokens.dart';
 import 'aurora_background.dart';
-import 'glass_surface.dart';
 import 'content_width.dart';
+import 'glass_surface.dart';
 
-/// Andamio temporal para pantallas aún no construidas.
-///
-/// Existe para que el flujo de navegación sea real desde el primer día; cada
-/// feature lo irá reemplazando por su propia vista.
 class ComingSoonScreen extends StatelessWidget {
   const ComingSoonScreen({
     required this.title,

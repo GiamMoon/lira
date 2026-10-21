@@ -3,10 +3,6 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_tokens.dart';
 
-/// Barra de progreso que **viaja** hasta su valor en vez de aparecer llena.
-///
-/// Ver cómo avanza la barra al volver a la app es media recompensa de haber
-/// leído: si se pinta ya completa, el avance no se siente.
 class AnimatedProgressBar extends StatelessWidget {
   const AnimatedProgressBar({
     required this.value,
@@ -27,17 +23,21 @@ class AnimatedProgressBar extends StatelessWidget {
     final pista = background ?? color.withValues(alpha: 0.15);
     final quieto = MediaQuery.disableAnimationsOf(context);
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(Radii.pill),
-      child: TweenAnimationBuilder<double>(
-        tween: Tween<double>(begin: 0, end: value.clamp(0.0, 1.0)),
-        duration: quieto ? Duration.zero : const Duration(milliseconds: 900),
-        curve: Motion.emphasized,
-        builder: (context, animado, _) => LinearProgressIndicator(
-          value: animado,
-          minHeight: height,
-          backgroundColor: pista,
-          valueColor: AlwaysStoppedAnimation<Color>(color),
+    return Semantics(
+      container: true,
+      label: 'Progreso de lectura',
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(Radii.pill),
+        child: TweenAnimationBuilder<double>(
+          tween: Tween<double>(begin: 0, end: value.clamp(0.0, 1.0)),
+          duration: quieto ? Duration.zero : const Duration(milliseconds: 900),
+          curve: Motion.emphasized,
+          builder: (context, animado, _) => LinearProgressIndicator(
+            value: animado,
+            minHeight: height,
+            backgroundColor: pista,
+            valueColor: AlwaysStoppedAnimation<Color>(color),
+          ),
         ),
       ),
     );

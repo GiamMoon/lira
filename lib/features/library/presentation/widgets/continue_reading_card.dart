@@ -8,11 +8,6 @@ import '../../domain/entities/book.dart';
 import '../../domain/entities/reading_progress.dart';
 import 'generated_cover.dart';
 
-/// "Sigue donde lo dejaste".
-///
-/// Es la pieza más importante de la pantalla: reduce a un toque la distancia
-/// entre abrir la app y volver a leer. Por eso ocupa el lugar más visible y
-/// lleva su propio menú discreto para dejar el libro sin drama.
 class ContinueReadingCard extends StatelessWidget {
   const ContinueReadingCard({
     required this.book,
@@ -92,7 +87,7 @@ class ContinueReadingCard extends StatelessWidget {
                     children: <Widget>[
                       Expanded(
                         child: AnimatedProgressBar(
-                          value: progress.fraction,
+                          value: progress.fractionOf(book.chapterCount),
                           height: 5,
                           color: AppColors.gold,
                           background: AppColors.cream.withValues(alpha: 0.22),
@@ -100,7 +95,7 @@ class ContinueReadingCard extends StatelessWidget {
                       ),
                       const SizedBox(width: Insets.md),
                       Text(
-                        '${progress.percent}%',
+                        '${(progress.fractionOf(book.chapterCount) * 100).round()}%',
                         style: theme.textTheme.labelLarge?.copyWith(
                           color: AppColors.cream,
                           fontSize: 12,
@@ -119,8 +114,6 @@ class ContinueReadingCard extends StatelessWidget {
   }
 }
 
-/// El "⋮" del que hablaba el brief: dejar un libro tiene que estar disponible,
-/// pero nunca gritar.
 class _MoreOptions extends StatelessWidget {
   const _MoreOptions({required this.onAbandon});
 

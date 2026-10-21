@@ -1,21 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../app/router/app_navigation.dart';
+import '../../../../app/router/app_route.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/aurora_background.dart';
 import '../../../../core/widgets/content_width.dart';
+import '../../../../core/widgets/desktop_frame.dart';
 import '../../../../core/widgets/staggered_entrance.dart';
 import '../../../reader/presentation/widgets/activity_invitation.dart';
 import '../view_model/creations_state.dart';
 import '../view_model/creations_view_model.dart';
 
-/// Todo lo que el estudiante ha escrito, en un sitio.
-///
-/// Sin esta pantalla, lo que escribe en las dinámicas desaparece en cuanto
-/// pasa de capítulo. Verlo acumularse es lo que convierte esas respuestas
-/// sueltas en algo que siente suyo.
 class CreationsScreen extends ConsumerWidget {
   const CreationsScreen({super.key});
 
@@ -24,33 +21,37 @@ class CreationsScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final creaciones = ref.watch(creationsViewModelProvider);
 
-    return Scaffold(
-      body: Stack(
-        fit: StackFit.expand,
-        children: <Widget>[
-          AuroraBackground(
-            baseColor: theme.colorScheme.surface,
-            intensity: 0.5,
-          ),
-          SafeArea(
-            child: creaciones.when(
-              loading: () => const Center(
-                child: CircularProgressIndicator(color: AppColors.wine),
-              ),
-              error: (_, _) => Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(Insets.xxl),
-                  child: Text(
-                    'No pudimos abrir tus creaciones.',
-                    style: theme.textTheme.headlineMedium,
-                    textAlign: TextAlign.center,
+    return DesktopFrame(
+      selected: AppRoute.creations,
+      child: Scaffold(
+        body: Stack(
+          fit: StackFit.expand,
+          children: <Widget>[
+            AuroraBackground(
+              baseColor: theme.colorScheme.surface,
+              intensity: 0.5,
+            ),
+            SafeArea(
+              child: creaciones.when(
+                loading: () => const Center(
+                  child: CircularProgressIndicator(color: AppColors.wine),
+                ),
+                error: (_, _) => Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(Insets.xxl),
+                    child: Text(
+                      'No pudimos abrir tus creaciones.',
+                      style: theme.textTheme.headlineMedium,
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 ),
+                data: (estado) =>
+                    ContentWidth(child: _Contenido(estado: estado)),
               ),
-              data: (estado) => ContentWidth(child: _Contenido(estado: estado)),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -142,7 +143,6 @@ class _Contenido extends StatelessWidget {
   }
 }
 
-/// Tres números, todos sacados de lo que hay guardado de verdad.
 class _Resumen extends StatelessWidget {
   const _Resumen({required this.estado});
 

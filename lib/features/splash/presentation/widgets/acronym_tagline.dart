@@ -49,8 +49,7 @@ class AcronymTagline extends StatelessWidget {
                 for (var i = 0; i < _words.length; i++) ...<InlineSpan>[
                   TextSpan(text: _words[i][0].toUpperCase(), style: initial),
                   TextSpan(text: _words[i].substring(1).toUpperCase()),
-                  if (i != _words.length - 1)
-                    const TextSpan(text: '   ·   '),
+                  if (i != _words.length - 1) const TextSpan(text: '   ·   '),
                 ],
               ],
             ),

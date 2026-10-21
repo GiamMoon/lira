@@ -46,9 +46,7 @@ class _BrandProgressState extends State<BrandProgress>
           height: 3,
           child: ClipRRect(
             borderRadius: BorderRadius.circular(Radii.pill),
-            child: CustomPaint(
-              painter: _ThreadPainter(progress: _sweep.value),
-            ),
+            child: CustomPaint(painter: _ThreadPainter(progress: _sweep.value)),
           ),
         ),
       ),
@@ -81,16 +79,11 @@ class _ThreadPainter extends CustomPainter {
       Rect.fromLTWH(left, 0, threadWidth, size.height),
       Paint()
         ..shader = const LinearGradient(
-          colors: <Color>[
-            Color(0x006B2639),
-            AppColors.wine,
-            Color(0x006B2639),
-          ],
+          colors: <Color>[Color(0x006B2639), AppColors.wine, Color(0x006B2639)],
         ).createShader(Rect.fromLTWH(left, 0, threadWidth, size.height)),
     );
   }
 
   @override
-  bool shouldRepaint(covariant _ThreadPainter old) =>
-      old.progress != progress;
+  bool shouldRepaint(covariant _ThreadPainter old) => old.progress != progress;
 }

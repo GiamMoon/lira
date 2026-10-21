@@ -9,14 +9,8 @@ import '../../../../core/theme/app_typography.dart';
 /// de verdad —una serif de libro, una sans de pantalla y una diseñada para
 /// baja visión— y no tres variantes del mismo gris.
 enum ReadingFont {
-  serif(
-    'Libro',
-    'Serif clásica, como una novela impresa.',
-  ),
-  sans(
-    'Pantalla',
-    'Sans limpia, cómoda en móviles pequeños.',
-  ),
+  serif('Libro', 'Serif clásica, como una novela impresa.'),
+  sans('Pantalla', 'Sans limpia, cómoda en móviles pequeños.'),
   legible(
     'Máxima claridad',
     'Diseñada para leer con poca vista: cada letra se distingue de las demás.',

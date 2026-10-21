@@ -7,8 +7,7 @@ import '../../domain/repositories/activity_response_repository.dart';
 ///
 /// `is_shared` se queda en `false`: lo que escribe es suyo y no aparece en
 /// ningún sitio salvo que un día decida compartirlo.
-class SupabaseActivityResponseRepository
-    implements ActivityResponseRepository {
+class SupabaseActivityResponseRepository implements ActivityResponseRepository {
   const SupabaseActivityResponseRepository(this._client);
 
   final SupabaseClient _client;

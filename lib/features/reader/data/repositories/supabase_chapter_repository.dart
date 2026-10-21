@@ -1,13 +1,11 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../../core/network/network_policy.dart';
+
 import '../../domain/entities/chapter.dart';
 import '../../domain/repositories/chapter_repository.dart';
 import '../dto/chapter_dto.dart';
 
-/// Capítulos servidos por Supabase.
-///
-/// Se piden ordenados por `position`: el orden de lectura es responsabilidad
-/// del servidor, no del cliente.
 class SupabaseChapterRepository implements ChapterRepository {
   const SupabaseChapterRepository(this._client);
 
@@ -17,13 +15,12 @@ class SupabaseChapterRepository implements ChapterRepository {
 
   @override
   Future<List<Chapter>> fetchChapters(String bookId) async {
-    // ¡`ascending` es false por defecto en postgrest-dart! Sin esto el libro
-    // se lee del final al principio.
     final rows = await _client
         .from(_table)
         .select()
         .eq('book_id', bookId)
-        .order('position', ascending: true);
+        .order('position', ascending: true)
+        .timeout(NetworkPolicy.requestTimeout);
 
     return rows
         .map((row) => ChapterDto.fromJson(row).toDomain())

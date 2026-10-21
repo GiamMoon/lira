@@ -33,10 +33,7 @@ final class ParagraphBlock extends ContentBlock {
   final String text;
 
   @override
-  Map<String, dynamic> toJson() => <String, dynamic>{
-    'type': 'p',
-    'text': text,
-  };
+  Map<String, dynamic> toJson() => <String, dynamic>{'type': 'p', 'text': text};
 }
 
 final class HeadingBlock extends ContentBlock {
@@ -45,10 +42,7 @@ final class HeadingBlock extends ContentBlock {
   final String text;
 
   @override
-  Map<String, dynamic> toJson() => <String, dynamic>{
-    'type': 'h',
-    'text': text,
-  };
+  Map<String, dynamic> toJson() => <String, dynamic>{'type': 'h', 'text': text};
 }
 
 /// Una estrofa. El salto de línea del autor es parte de la obra: un poema
@@ -65,10 +59,7 @@ final class VerseBlock extends ContentBlock {
   List<String> get lines => text.split('\n');
 
   @override
-  Map<String, dynamic> toJson() => <String, dynamic>{
-    'type': 'v',
-    'text': text,
-  };
+  Map<String, dynamic> toJson() => <String, dynamic>{'type': 'v', 'text': text};
 }
 
 final class QuoteBlock extends ContentBlock {

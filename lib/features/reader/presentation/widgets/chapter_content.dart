@@ -59,9 +59,7 @@ class ChapterContent extends StatelessWidget {
       QuoteBlock(:final text) => Container(
         padding: const EdgeInsets.only(left: Insets.lg),
         decoration: const BoxDecoration(
-          border: Border(
-            left: BorderSide(color: AppColors.wine, width: 3),
-          ),
+          border: Border(left: BorderSide(color: AppColors.wine, width: 3)),
         ),
         child: Text(
           text,
@@ -97,9 +95,7 @@ class _Stanza extends StatelessWidget {
       padding: const EdgeInsets.only(left: Insets.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          for (final line in lines) Text(line, style: verso),
-        ],
+        children: <Widget>[for (final line in lines) Text(line, style: verso)],
       ),
     );
   }

@@ -8,30 +8,12 @@ part of 'reader_view_model.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// ViewModel del lector, uno por obra abierta.
-///
-/// Reglas de producto que se cumplen aquí, no en la UI:
-/// - el avance se guarda solo, sin botón de "guardar";
-/// - dejar un libro conserva el progreso;
-/// - responder una dinámica es siempre opcional y nunca bloquea la lectura.
 
 @ProviderFor(ReaderViewModel)
 final readerViewModelProvider = ReaderViewModelFamily._();
 
-/// ViewModel del lector, uno por obra abierta.
-///
-/// Reglas de producto que se cumplen aquí, no en la UI:
-/// - el avance se guarda solo, sin botón de "guardar";
-/// - dejar un libro conserva el progreso;
-/// - responder una dinámica es siempre opcional y nunca bloquea la lectura.
 final class ReaderViewModelProvider
     extends $AsyncNotifierProvider<ReaderViewModel, ReaderState> {
-  /// ViewModel del lector, uno por obra abierta.
-  ///
-  /// Reglas de producto que se cumplen aquí, no en la UI:
-  /// - el avance se guarda solo, sin botón de "guardar";
-  /// - dejar un libro conserva el progreso;
-  /// - responder una dinámica es siempre opcional y nunca bloquea la lectura.
   ReaderViewModelProvider._({
     required ReaderViewModelFamily super.from,
     required String super.argument,
@@ -68,14 +50,7 @@ final class ReaderViewModelProvider
   }
 }
 
-String _$readerViewModelHash() => r'a8b4264f8718730fdde018eb436dfc9c9501e1fb';
-
-/// ViewModel del lector, uno por obra abierta.
-///
-/// Reglas de producto que se cumplen aquí, no en la UI:
-/// - el avance se guarda solo, sin botón de "guardar";
-/// - dejar un libro conserva el progreso;
-/// - responder una dinámica es siempre opcional y nunca bloquea la lectura.
+String _$readerViewModelHash() => r'd2a1f573eae76a92c4c96ec5204a3db39d1d1d66';
 
 final class ReaderViewModelFamily extends $Family
     with
@@ -95,26 +70,12 @@ final class ReaderViewModelFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// ViewModel del lector, uno por obra abierta.
-  ///
-  /// Reglas de producto que se cumplen aquí, no en la UI:
-  /// - el avance se guarda solo, sin botón de "guardar";
-  /// - dejar un libro conserva el progreso;
-  /// - responder una dinámica es siempre opcional y nunca bloquea la lectura.
-
   ReaderViewModelProvider call(String bookId) =>
       ReaderViewModelProvider._(argument: bookId, from: this);
 
   @override
   String toString() => r'readerViewModelProvider';
 }
-
-/// ViewModel del lector, uno por obra abierta.
-///
-/// Reglas de producto que se cumplen aquí, no en la UI:
-/// - el avance se guarda solo, sin botón de "guardar";
-/// - dejar un libro conserva el progreso;
-/// - responder una dinámica es siempre opcional y nunca bloquea la lectura.
 
 abstract class _$ReaderViewModel extends $AsyncNotifier<ReaderState> {
   late final _$args = ref.$arg as String;
